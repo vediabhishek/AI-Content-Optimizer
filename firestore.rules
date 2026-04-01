@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - uid: string (required) - The unique identifier for the user.
+    //   - displayName: string (optional) - The user's display name.
+    //   - email: string (required) - The user's email address.
+    //   - photoURL: string (optional) - The user's profile photo URL.
+    //   - createdAt: timestamp (required) - When the user profile was created.
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "abhishekvedi720@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email']) &&
+             data.uid is string && data.uid.size() > 0 &&
+             data.email is string && data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if (isOwner(userId) || isAdmin()) && 
+                      (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'photoURL', 'settings', 'role']) || isAdmin());
+      
+      match /analyses/{analysisId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      match /bulk_analyses/{bulkId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // Test connection path
+    match /test/connection {
+      allow read: if isAuthenticated();
+    }
+  }
+}

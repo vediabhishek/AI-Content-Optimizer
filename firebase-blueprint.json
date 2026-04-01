@@ -1,0 +1,59 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User profile information stored in Firestore.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The unique identifier for the user." },
+        "displayName": { "type": "string", "description": "The user's display name." },
+        "email": { "type": "string", "description": "The user's email address." },
+        "photoURL": { "type": "string", "description": "The user's profile photo URL." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the user profile was created." }
+      },
+      "required": ["uid", "email"]
+    },
+    "SavedAnalysis": {
+      "title": "Saved Analysis",
+      "description": "A single content analysis result.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "content": { "type": "string" },
+        "url": { "type": "string" },
+        "results": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "content", "results", "createdAt"]
+    },
+    "BulkAnalysisResults": {
+      "title": "Bulk Analysis Results",
+      "description": "Results from a bulk analysis session.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "items": { "type": "array" },
+        "averageScore": { "type": "number" },
+        "totalItems": { "type": "number" },
+        "completedItems": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "items", "averageScore", "totalItems", "completedItems", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "A collection of user profiles."
+    },
+    "/users/{userId}/analyses/{analysisId}": {
+      "schema": "SavedAnalysis",
+      "description": "A collection of individual analyses for a user."
+    },
+    "/users/{userId}/bulk_analyses/{bulkId}": {
+      "schema": "BulkAnalysisResults",
+      "description": "A collection of bulk analysis results for a user."
+    }
+  }
+}

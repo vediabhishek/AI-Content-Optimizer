@@ -1,0 +1,5 @@
+{
+  "name": "AI Content Optimizer",
+  "description": "A platform to scan and optimize blog content for AEO, GEO, and AIO with AI-powered recommendations and user authentication.",
+  "requestFramePermissions": []
+}
